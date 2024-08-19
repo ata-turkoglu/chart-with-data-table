@@ -46,7 +46,6 @@ const chartData = computed(() => store.getters["chart/getChartOptions"]);
 watch(
     () => chartData.value,
     (val) => {
-        console.log("chartData-watch", val);
         if (val.categories.length > 0) {
             chartReady.value = true;
         }
@@ -113,7 +112,6 @@ watch(
         store
             .dispatch("chart/getDailySales", { day: val.value })
             .then((res) => {
-                console.log(res);
                 if (res.status) {
                     chartReady.value = true;
                 }
@@ -169,6 +167,9 @@ const chartOptions = computed(() => {
                 states: {
                     inactive: {
                         opacity: 1,
+                    },
+                    hover: {
+                        enabled: false,
                     },
                 },
             },

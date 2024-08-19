@@ -16,6 +16,7 @@ export default {
     state: {
         currency: null,
         tableData: null,
+        receivedPageNumber: null,
     },
     getters: {
         getTableData: (state) => state.tableData,
@@ -37,6 +38,8 @@ export default {
     mutations: {
         SET_TABLE_DATA: (state, data) => (state.tableData = data),
         SET_CURRENCY: (state, data) => (state.currency = data),
+        SET_RECEIVED_PAGE_NUMBER: (state, data) =>
+            (state.receivedPageNumber = data),
     },
     actions: {
         async getDailySalesSkuList(
@@ -74,6 +77,7 @@ export default {
                         };
 
                     let tableData = resData.Data.item;
+                    commit("SET_RECEIVED_PAGE_NUMBER", pageNumber);
 
                     const refaundRatesResult = await dispatch("getRefundRate", {
                         skuList: tableData.skuList.map((itm) => itm.sku),

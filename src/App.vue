@@ -15,10 +15,8 @@ const router = useRouter();
 
 onBeforeMount(() => {
     const token = JSON.parse(window.localStorage.getItem("token"));
-    const user = JSON.parse(window.localStorage.getItem("user"));
 
     if (token) {
-        console.log("app-token-local", token);
         axios.interceptors.request.use(function (config) {
             config.headers = {
                 Authorization: `Bearer ${token.AccessToken}`,
@@ -26,11 +24,6 @@ onBeforeMount(() => {
             return config;
         });
         store.commit("user/SET_TOKEN", token);
-    }
-
-    if (user) {
-        console.log("app-user-local");
-        store.commit("user/SET_USER", user);
     }
 
     if (!store.state.user.token) {

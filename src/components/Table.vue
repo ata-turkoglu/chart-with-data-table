@@ -107,13 +107,20 @@
                 />
                 <Circle v-else size="20" color="#d4d4d4" />
                 <span class="mx-3 text-neutral-800">{{ selectedPage }}</span>
-                <Circle
-                    v-if="filteredTableRows.length < 10"
+                <!-- <Circle
+                    v-if="filteredTableRows.length < 10 || maxPageReached"
                     size="20"
                     color="#d4d4d4"
                 />
                 <ChevronRightCircle
                     v-else
+                    class="cursor-pointer"
+                    size="20"
+                    color="grey"
+                    @click="selectPage(1)"
+                /> -->
+                <ChevronRightCircle
+                    v-if="!maxPageReached"
                     class="cursor-pointer"
                     size="20"
                     color="grey"
@@ -126,7 +133,7 @@
 
 <script setup>
 import { useStore } from "vuex";
-import { computed, watch, ref, reactive } from "vue";
+import { computed, watch, ref, reactive, defineProps } from "vue";
 import {
     Circle,
     ChevronDown,
@@ -137,10 +144,12 @@ import {
 } from "lucide-vue-next";
 
 const store = useStore();
+const props = defineProps(["selectedDates"]);
 
 const tableReady = ref(false);
 const selectedPage = ref(1);
 const searchValue = reactive({ value: "" });
+const maxPageReached = ref(false);
 
 const tableData = computed(() => store.getters["table/getTableData"]);
 const skuList = computed(() =>
@@ -150,6 +159,7 @@ const tableDates = computed(() => store.getters["table/getTableDates"]);
 const maxPage = computed(() => store.getters["table/getMaxPageIndex"]);
 const currency = computed(() => store.state.table.currency);
 const dateRange = computed(() => store.state.chart.dateRange);
+const receivedPageNumber = computed(() => store.state.table.receivedPageNumber);
 
 const filteredTableRows = computed(() => {
     if (searchValue.value == "") return skuList.value;
@@ -175,7 +185,6 @@ const filteredTableRows = computed(() => {
 watch(
     () => tableData.value,
     function (val) {
-        console.log("tableData", val);
         if (val.skuList.length > 0) tableReady.value = true;
     },
     { immediate: true, deep: true }
@@ -200,8 +209,27 @@ const setIncreaseArrow = (item) => {
 };
 
 const selectPage = (increase) => {
-    console.log("maxPage", maxPage.value);
-    selectedPage.value = increase + selectedPage.value;
+    const requestedPage = increase + selectedPage.value;
+    const pageNumber = Math.ceil(requestedPage / 3);
+    if (
+        pageNumber > receivedPageNumber.value ||
+        pageNumber < receivedPageNumber.value
+    ) {
+        store
+            .dispatch("table/getDailySalesSkuList", {
+                dates: props.selectedDates,
+                pageNumber,
+            })
+            .then((result) => {
+                if (result.status) {
+                    selectedPage.value = increase + selectedPage.value;
+                } else {
+                    maxPageReached.value = true;
+                }
+            });
+    } else {
+        selectedPage.value = increase + selectedPage.value;
+    }
 };
 </script>
 

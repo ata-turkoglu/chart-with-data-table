@@ -20,7 +20,11 @@
                 size="60"
             />
         </div>
-        <Table v-if="tableState" class="h-2/5" />
+        <Table
+            v-if="tableState"
+            class="h-2/5"
+            :selectedDates="selectedChartDates.value"
+        />
     </div>
 </template>
 
@@ -37,6 +41,8 @@ const tableState = ref(false);
 
 const user = computed(() => store.getters["user/getUserData"]);
 
+let selectedChartDates = reactive({ value: null });
+
 let errorData = reactive({
     errorStatus: false,
     errorMessage: "",
@@ -51,7 +57,6 @@ onMounted(() => {
 watch(
     () => user.value,
     function (user) {
-        console.log("user-watch", user);
         if (user) {
             getDailySales();
         }
@@ -72,11 +77,12 @@ const getDailySales = async () => {
 };
 
 const selectedDates = (dates) => {
+    Object.assign(selectedChartDates, { value: dates });
     getDailySalesSkuList({ dates });
 };
 
-const getDailySalesSkuList = async (dates) => {
-    store.dispatch("table/getDailySalesSkuList", dates).then((result) => {
+const getDailySalesSkuList = async (data) => {
+    store.dispatch("table/getDailySalesSkuList", data).then((result) => {
         if (result.status) {
             tableState.value = true;
         }

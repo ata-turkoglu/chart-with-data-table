@@ -56,7 +56,6 @@ export default {
 
                     commit("SET_CHART_DATA", resData.Data.item);
                     commit("SET_CURRENCY", resData.Data.Currency);
-                    console.log("getDailySales", result);
                     return { status: true };
                 })
                 .catch((e) => {

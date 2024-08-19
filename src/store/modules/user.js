@@ -1,4 +1,4 @@
-import axios, { axiosConfig } from "@/plugins/axios";
+import axios from "@/plugins/axios";
 
 export default {
     namespaced: true,
@@ -23,7 +23,6 @@ export default {
     },
     actions: {
         async login({ commit, dispatch }, data) {
-            console.log("login");
             const userData = {
                 Email: null,
                 Password: null,
@@ -37,7 +36,6 @@ export default {
             return axios
                 .post("/oauth/token", userData)
                 .then(async (result) => {
-                    console.log("login-res", result);
                     const resData = result.data;
 
                     //error
@@ -49,9 +47,6 @@ export default {
 
                     //success
                     commit("SET_TOKEN", resData.Data);
-                    axiosConfig.headers = {
-                        Authorization: `Bearer ${resData.Data.AccessToken}`,
-                    };
                     axios.interceptors.request.use(function (config) {
                         config.headers = {
                             Authorization: `Bearer ${resData.Data.AccessToken}`,
@@ -59,14 +54,11 @@ export default {
                         return config;
                     });
 
-                    console.log(axios);
                     //waiting for new request's response
                     const userResult = await dispatch("getUserInformation", {
                         data: { email: data.Email },
                         AccessToken: resData.Data.RefreshToken,
                     });
-
-                    console.log("userResult", userResult);
 
                     //error
                     if (!userResult.data.ApiStatus) {
@@ -93,9 +85,7 @@ export default {
                     };
                 });
         },
-        getUserInformation({ commit }, { data, AccessToken }) {
-            console.log("getUserInformation");
-
+        getUserInformation({ commit }, { data }) {
             return axios
                 .post("/user/user-information", data)
                 .catch((e) => (e.response ? e.response : e));
